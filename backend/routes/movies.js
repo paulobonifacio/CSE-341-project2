@@ -1,4 +1,3 @@
-// routes/movies.js
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
@@ -31,8 +30,21 @@ router.get('/', authenticateToken, async (req, res) => {
 // POST a new movie
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const { title, director, year } = req.body;
-    const newMovie = new Movie({ title, director, year });
+    const { title, director, releaseYear, genre } = req.body;
+
+    // Validate input
+    if (!title || !director || !releaseYear || !genre) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    const newMovie = new Movie({
+      title,
+      director,
+      releaseYear,
+      genre,
+      createdBy: req.user.id, // JWT decoded user ID
+    });
+
     await newMovie.save();
     res.status(201).json(newMovie);
   } catch (err) {
