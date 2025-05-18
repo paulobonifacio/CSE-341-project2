@@ -17,6 +17,9 @@ router.post('/register', validate, async (req, res) => {
     user.password = await bcrypt.hash(password, salt);
     await user.save();
 
+    // log after saving to verify persistence
+    console.log('User saved successfully:', user);
+
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.status(201).json({ token });
   } catch (error) {
