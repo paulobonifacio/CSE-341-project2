@@ -4,9 +4,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
-const validate = require('../middleware/validate');
+// const validate = require('../middleware/validate'); ← temporariamente removido
 
-router.post('/register', validate, async (req, res) => {
+router.post('/register', async (req, res) => {
   try {
     const { email, name, password } = req.body;
     let user = await User.findOne({ email });
