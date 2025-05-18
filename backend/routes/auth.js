@@ -10,30 +10,32 @@ router.post('/register', validate, async (req, res) => {
   try {
     const { email, name, password } = req.body;
     let user = await User.findOne({ email });
-    if (user) return res.status(400).json({ message: 'User already exists' });
+
+    if (user) {
+      console.log('User already exists:', email);
+      return res.status(400).json({ message: 'User already exists' });
+    }
 
     user = new User({ email, name, password });
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
 
-    // log before saving to detect potential hang
-    console.log('Saving user to database:', user);
+    console.log('⏳ About to save user:', user);
 
-    await user.save();
-
-    // log after saving to verify persistence
-    console.log('User saved successfully:', user);
+    try {
+      await user.save();
+      console.log('✅ User saved:', user);
+    } catch (saveErr) {
+      console.error('❌ Error saving user:', saveErr);
+      return res.status(400).json({ message: 'User could not be saved', details: saveErr.message });
+    }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.status(201).json({ token });
+
+    console.log('🔐 Token generated:', token);
+
+    return res.status(201).json({ token });
   } catch (error) {
-    // improved error logging
-    console.error('Error registering user:', {
-      message: error.message,
-      stack: error.stack,
-      error
-    });
-    res.status(500).json({ message: 'Server error' });
+    console.error('🔥 Unexpected error in register:', error);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 
