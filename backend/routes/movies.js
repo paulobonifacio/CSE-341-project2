@@ -16,13 +16,13 @@ function authenticateToken(req, res, next) {
   });
 }
 
-// GET all movies
+// GET all movies created by the authenticated user
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const movies = await Movie.find();
+    const movies = await Movie.find({ createdBy: req.user.id });
     res.status(200).json(movies);
   } catch (err) {
-    console.error('Error fetching movies:', err);
+    console.error('Error fetching movies:', err.message, err.stack);
     res.status(500).json({ message: 'Failed to fetch movies' });
   }
 });
@@ -32,24 +32,23 @@ router.post('/', authenticateToken, async (req, res) => {
   try {
     const { title, director, releaseYear, genre } = req.body;
 
-    // Validate input
     if (!title || !director || !releaseYear || !genre) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    const newMovie = new Movie({
+    const movie = new Movie({
       title,
       director,
       releaseYear,
       genre,
-      createdBy: req.user.id, // JWT decoded user ID
+      createdBy: req.user.id,
     });
 
-    await newMovie.save();
-    res.status(201).json(newMovie);
+    await movie.save();
+    res.status(201).json(movie);
   } catch (err) {
-    console.error('Error saving movie:', err);
-    res.status(500).json({ message: 'Failed to save movie' });
+    console.error('Error saving movie:', err.message, err.stack);
+    res.status(500).json({ message: 'Failed to save movie', error: err.message });
   }
 });
 
