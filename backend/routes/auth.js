@@ -17,22 +17,18 @@ router.post('/register', validate, async (req, res) => {
     }
 
     user = new User({ email, name, password });
-
     console.log('⏳ About to save user:', user);
 
-    try {
-      await user.save();
-      console.log('✅ User saved:', user);
-    } catch (saveErr) {
-      console.error('❌ Error saving user:', saveErr);
-      return res.status(400).json({ message: 'User could not be saved', details: saveErr.message });
-    }
+    await user.save().then(() => {
+      console.log('✅ User saved with .then():', user);
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      console.log('🔐 Token generated:', token);
+      return res.status(201).json({ token });
+    }).catch(err => {
+      console.error('❌ Error saving user (from .then()):', err);
+      return res.status(500).json({ message: 'Error saving user', error: err.message });
+    });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    console.log('🔐 Token generated:', token);
-
-    return res.status(201).json({ token });
   } catch (error) {
     console.error('🔥 Unexpected error in register:', error);
     return res.status(500).json({ message: 'Server error' });
