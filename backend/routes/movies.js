@@ -16,13 +16,13 @@ function authenticateToken(req, res, next) {
   });
 }
 
-// GET all movies created by the authenticated user
+// GET all movies
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const movies = await Movie.find({ createdBy: req.user.id });
+    const movies = await Movie.find();
     res.status(200).json(movies);
   } catch (err) {
-    console.error('Error fetching movies:', err.message, err.stack);
+    console.error('Error fetching movies:', err);
     res.status(500).json({ message: 'Failed to fetch movies' });
   }
 });
@@ -30,24 +30,37 @@ router.get('/', authenticateToken, async (req, res) => {
 // POST a new movie
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const { title, director, releaseYear, genre } = req.body;
+    const {
+      movieId,
+      title,
+      description,
+      releaseDate,
+      genre,
+      director,
+      cast,
+      rating
+    } = req.body;
 
-    if (!title || !director || !releaseYear || !genre) {
+    if (!movieId || !title || !description || !releaseDate || !genre || !director || !cast || !rating) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    const movie = new Movie({
+    const newMovie = new Movie({
+      movieId,
       title,
-      director,
-      releaseYear,
+      description,
+      releaseDate,
       genre,
-      createdBy: req.user.id,
+      director,
+      cast,
+      rating,
+      createdBy: req.user.id
     });
 
-    await movie.save();
-    res.status(201).json(movie);
+    await newMovie.save();
+    res.status(201).json(newMovie);
   } catch (err) {
-    console.error('Error saving movie:', err.message, err.stack);
+    console.error('Error saving movie:', err);
     res.status(500).json({ message: 'Failed to save movie', error: err.message });
   }
 });
