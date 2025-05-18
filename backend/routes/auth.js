@@ -6,7 +6,7 @@ const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const validate = require('../middleware/validate');
 
-router.post('/register', validate, async (req, res) => {
+router.post('/register', validate('user'), async (req, res) => {
   try {
     const { email, name, password } = req.body;
     let user = await User.findOne({ email });
