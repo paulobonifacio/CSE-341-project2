@@ -4,9 +4,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
-// const validate = require('../middleware/validate'); ← temporariamente removido
+const validate = require('../middleware/validate');
 
-router.post('/register', async (req, res) => {
+router.post('/register', validate, async (req, res) => {
   try {
     const { email, name, password } = req.body;
     let user = await User.findOne({ email });
@@ -19,18 +19,18 @@ router.post('/register', async (req, res) => {
     user = new User({ email, name, password });
     console.log('⏳ About to save user:', user);
 
-    await user.save().then(() => {
-      console.log('✅ User saved with .then():', user);
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      console.log('🔐 Token generated:', token);
-      return res.status(201).json({ token });
-    }).catch(err => {
-      console.error('❌ Error saving user (from .then()):', err);
-      return res.status(500).json({ message: 'Error saving user', error: err.message });
-    });
+    await user.save();
+    console.log('✅ User saved:', user);
 
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    console.log('🔐 Token generated:', token);
+
+    return res.status(201).json({ token });
   } catch (error) {
-    console.error('🔥 Unexpected error in register:', error);
+    console.error('🔥 Unexpected error in register:', {
+      message: error.message,
+      stack: error.stack
+    });
     return res.status(500).json({ message: 'Server error' });
   }
 });
@@ -39,16 +39,25 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.status(200).json({ token });
+    return res.status(200).json({ token });
   } catch (error) {
-    console.error('Error logging in user:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('🔥 Error logging in user:', {
+      message: error.message,
+      stack: error.stack
+    });
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -60,21 +69,26 @@ router.post('/google', async (req, res) => {
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID
     });
+
     const payload = ticket.getPayload();
     const email = payload.email;
     const name = payload.name;
 
     let user = await User.findOne({ email });
+
     if (!user) {
       user = new User({ email, name, password: '' });
       await user.save();
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.status(200).json({ token });
+    return res.status(200).json({ token });
   } catch (error) {
-    console.error('Error with Google login:', error);
-    res.status(401).json({ message: 'Google auth failed' });
+    console.error('🔥 Error with Google login:', {
+      message: error.message,
+      stack: error.stack
+    });
+    return res.status(401).json({ message: 'Google auth failed' });
   }
 });
 
