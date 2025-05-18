@@ -15,6 +15,10 @@ router.post('/register', validate, async (req, res) => {
     user = new User({ email, name, password });
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
+
+    // log before saving to detect potential hang
+    console.log('Saving user to database:', user);
+
     await user.save();
 
     // log after saving to verify persistence
