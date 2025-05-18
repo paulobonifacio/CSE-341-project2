@@ -1,0 +1,105 @@
+.movie-form-container {
+    max-width: 600px;
+    margin: 1rem auto;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+  }
+  
+  .movie-form-title {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  
+  .movie-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .movie-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .movie-form-label {
+    font-weight: 500;
+    color: #444;
+  }
+  
+  .movie-form-input {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  
+  .movie-form-input:focus {
+    outline: none;
+    border-color: #34a853;
+  }
+  
+  .movie-form-textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+  
+  .chip-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  
+  .chip {
+    background-color: #e0e0e0;
+    padding: 0.25rem 0.75rem;
+    border-radius: 16px;
+    font-size: 0.9rem;
+  }
+  
+  .movie-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  .movie-form-button {
+    padding: 0.65rem 1.25rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .movie-form-submit {
+    background-color: #34a853;
+    color: white;
+    border: none;
+  }
+  
+  .movie-form-submit:hover {
+    background-color: #2d9249;
+  }
+  
+  .movie-form-cancel {
+    background-color: transparent;
+    border: 1px solid #ddd;
+    color: #666;
+  }
+  
+  .movie-form-cancel:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .error-message {
+    color: #d32f2f;
+    background-color: #fde8e8;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }

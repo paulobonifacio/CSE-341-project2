@@ -1,0 +1,193 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Movie Registration API",
+    "version": "1.0.0",
+    "description": "API for managing movies and user authentication"
+  },
+  "servers": [
+    { "url": "http://localhost:5000/api" },
+    { "url": "https://your-render-url.com/api" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Movie": {
+        "type": "object",
+        "required": ["movieId", "title", "description", "releaseDate", "genre", "director", "cast", "rating"],
+        "properties": {
+          "movieId": { "type": "string", "description": "Unique movie identifier" },
+          "title": { "type": "string", "description": "Movie title" },
+          "description": { "type": "string", "description": "Movie synopsis" },
+          "releaseDate": { "type": "string", "format": "date", "description": "Release date (ISO)" },
+          "genre": { "type": "array", "items": { "type": "string" }, "description": "Genres" },
+          "director": { "type": "string", "description": "Director's name" },
+          "cast": { "type": "array", "items": { "type": "string" }, "description": "Main actors" },
+          "rating": { "type": "number", "minimum": 0, "maximum": 10, "description": "Rating (0-10)" }
+        }
+      },
+      "User": {
+        "type": "object",
+        "required": ["email", "name", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "name": { "type": "string" },
+          "password": { "type": "string", "minLength": 6 }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/movies": {
+      "get": {
+        "summary": "Get all movies",
+        "responses": {
+          "200": { 
+            "description": "List of movies", 
+            "content": { 
+              "application/json": { 
+                "schema": { 
+                  "type": "array", 
+                  "items": { "$ref": "#/components/schemas/Movie" } 
+                } 
+              } 
+            } 
+          },
+          "500": { "description": "Server error" }
+        }
+      },
+      "post": {
+        "summary": "Create a movie",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Movie" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Movie created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Movie" } } } },
+          "400": { "description": "Invalid data" },
+          "401": { "description": "Unauthorized" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/movies/{id}": {
+      "get": {
+        "summary": "Get a movie by ID",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Movie details", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Movie" } } } },
+          "400": { "description": "Invalid ID" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Movie not found" },
+          "500": { "description": "Server error" }
+        }
+      },
+      "put": {
+        "summary": "Update a movie",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Movie" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Movie updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Movie" } } } },
+          "400": { "description": "Invalid data or ID" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "Movie not found" },
+          "500": { "description": "Server error" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a movie",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Movie deleted" },
+          "400": { "description": "Invalid ID" },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "Movie not found" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "summary": "Register a new user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/User" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User registered", "content": { "application/json": { "schema": { "type": "object", "properties": { "token": { "type": "string" } } } } } },
+          "400": { "description": "Invalid data" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Login a user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "email": { "type": "string", "format": "email" }, "password": { "type": "string" } }, "required": ["email", "password"] }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User logged in", "content": { "application/json": { "schema": { "type": "object", "properties": { "token": { "type": "string" } } } } } },
+          "400": { "description": "Invalid credentials" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/auth/google": {
+      "post": {
+        "summary": "Google OAuth login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "credential": { "type": "string" } }, "required": ["credential"] }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Google login successful", "content": { "application/json": { "schema": { "type": "object", "properties": { "token": { "type": "string" } } } } } },
+          "401": { "description": "Google auth failed" },
+          "500": { "description": "Server error" }
+        }
+      }
+    }
+  }
+}
