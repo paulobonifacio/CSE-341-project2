@@ -19,7 +19,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get('/', (req, res) => {
   res.send(`
     <h2>🚀 Contacts API is on!</h2>
-    <h2>📚 Access the <a href="/api-docs" target="_blank">Swagger Documentation</a></h2>
+    <h2>📚 Please access the <a href="/api-docs" target="_blank">Swagger Documentation📚</a></h2>
   `);
 });
 
