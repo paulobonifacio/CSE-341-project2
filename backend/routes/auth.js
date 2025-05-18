@@ -27,7 +27,12 @@ router.post('/register', validate, async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.status(201).json({ token });
   } catch (error) {
-    console.error('Error registering user:', error);
+    // improved error logging
+    console.error('Error registering user:', {
+      message: error.message,
+      stack: error.stack,
+      error
+    });
     res.status(500).json({ message: 'Server error' });
   }
 });
