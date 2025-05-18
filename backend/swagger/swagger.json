@@ -7,7 +7,7 @@
   },
   "servers": [
     { "url": "http://localhost:5000/api" },
-    { "url": "https://your-render-url.com/api" }
+    { "url": "https://cse-341-project2-jwva.onrender.com/api" }
   ],
   "components": {
     "securitySchemes": {
