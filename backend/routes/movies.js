@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose'); // Needed to validate MongoDB ObjectId
+const mongoose = require('mongoose'); 
 const Movie = require('../models/Movie');
 
 // Middleware to validate JWT token
@@ -130,6 +130,36 @@ router.put('/:id', authenticateToken, async (req, res) => {
     res.status(200).json(movie);
   } catch (err) {
     console.error('Error updating movie:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// DELETE a movie by ID (supports MongoDB _id or custom movieId)
+router.delete('/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    let movie = null;
+
+    // If it's a valid MongoDB ObjectId, try finding by _id
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      movie = await Movie.findById(id);
+    }
+
+    // If not found by _id, or not an ObjectId, search by movieId
+    if (!movie) {
+      movie = await Movie.findOne({ movieId: id });
+    }
+
+    if (!movie) {
+      return res.status(404).json({ message: 'Movie not found' });
+    }
+
+    // Remove the movie
+    await movie.remove();
+
+    res.status(200).json({ message: 'Movie deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting movie:', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
