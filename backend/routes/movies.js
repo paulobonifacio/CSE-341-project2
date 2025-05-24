@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose'); 
+const mongoose = require('mongoose');
 const Movie = require('../models/Movie');
 
 // Middleware to validate JWT token
@@ -77,6 +77,7 @@ router.post('/', authenticateToken, async (req, res) => {
       rating
     } = req.body;
 
+    // Validate required fields
     if (!movieId || !title || !description || !releaseDate || !genre || !director || !cast || !rating) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
@@ -154,8 +155,8 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ message: 'Movie not found' });
     }
 
-    // Remove the movie
-    await movie.remove();
+    // Use deleteOne to remove the movie (remove() is deprecated)
+    await Movie.deleteOne({ _id: movie._id });
 
     res.status(200).json({ message: 'Movie deleted successfully' });
   } catch (err) {
