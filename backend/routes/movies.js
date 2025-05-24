@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose'); // ADICIONADO para validar ObjectId
 const Movie = require('../models/Movie');
 
 // Middleware to validate JWT token
@@ -12,7 +13,7 @@ function authenticateToken(req, res, next) {
     return res.status(401).json({ message: 'Access denied: No token provided' });
   }
 
-  // Remove "Bearer 
+  // Remove "Bearer " se estiver presente
   if (token.startsWith('Bearer ')) {
     token = token.slice(7).trim();
   }
@@ -39,16 +40,19 @@ router.get('/', authenticateToken, async (req, res) => {
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
+    let movie = null;
 
-    // Fetch by MongoDB _id
-    let movie = await Movie.findById(id);
+    // Verifica se o id é um ObjectId válido antes de usar findById
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      movie = await Movie.findById(id);
+    }
 
-    // Try using the movieId value
+    // Se não encontrou pelo _id ou se não era um ObjectId, tenta pelo movieId
     if (!movie) {
       movie = await Movie.findOne({ movieId: id });
     }
 
-    // If no entries, returns 404
+    // Se não encontrou de nenhuma forma, retorna 404
     if (!movie) {
       return res.status(404).json({ message: 'Movie not found' });
     }
